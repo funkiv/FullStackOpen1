@@ -6,10 +6,10 @@ sequenceDiagram
     B-->>A: 302 Redirect to /notes
     A->>B: GET /notes
     B-->>A: HTML Doc
-    A->>B: Get CSS Doc
+    A->>B: GET CSS Doc
     B-->>A: CSS Doc
-    A->>B: Get JS
+    A->>B: GET JS
     B-->>A: JS Doc
-    A->>B: Get JSON Doc
+    A->>B: GET JSON Doc
     B-->>A: JSON Content
 ```

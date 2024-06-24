@@ -2,7 +2,7 @@ import { useState } from 'react'
 
 const Button = (props) => {
   return (
-    <button onClick={props.handleClick}>next anecdote</button>
+    <button onClick={props.handleClick}>{props.text}</button>
   )
 }
 
@@ -17,7 +17,8 @@ const App = () => {
     'Programming without an extremely heavy use of console.log is same as if a doctor would refuse to use x-rays or blood tests when diagnosing patients.',
     'The only way to go fast, is to go well.'
   ]
-   
+  const initialVotes = new Uint8Array(anecdotes.length) 
+  const [votes, setVotes] = useState(initialVotes)
   const [selected, setSelected] = useState(0)
 
   //Random number between two ints
@@ -27,10 +28,20 @@ const App = () => {
     return Math.floor(Math.random() * (maxFloored - minCeiled + 1) + minCeiled)
   }
 
+  const handleVotes = () => {
+    const copy = [...votes]
+    copy[selected] += 1
+    setVotes(copy)
+    console.log(selected)
+    console.log(copy)
+  }
+
   return (
     <div>
-     <p>{anecdotes[selected]}</p> 
-      <Button handleClick= {() => setSelected(getRandom(anecdotes.length - 1))}/>
+     <p>{anecdotes[selected]}</p>
+     <p>has {votes[selected]} votes</p> 
+      <Button handleClick= {() => handleVotes()} text = "vote"/>
+      <Button handleClick= {() => setSelected(getRandom(anecdotes.length - 1))} text = "next anecdote"/>
     </div>
   )
 }

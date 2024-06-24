@@ -1,11 +1,30 @@
 import { useState } from 'react'
 
+const DailyAnecdote = (props) => {
+  return (
+    <div>
+      <h1>Anecdote of the day</h1>
+      <p>{props.currentAnecdote}</p>
+      <p>has {props.currentVotes} votes</p> 
+    </div>
+  )
+}
+
 const Button = (props) => {
   return (
     <button onClick={props.handleClick}>{props.text}</button>
   )
 }
 
+const MostVotes = (props) => {
+  return (
+    <div>
+      <h1>Anecdote with most votes</h1>
+      <p>{props.mostAnecdote}</p>
+      <p>has {props.mostVotes} votes</p> 
+    </div>
+  )
+}
 const App = () => {
   const anecdotes = [
     'If it hurts, do it more often.',
@@ -20,8 +39,9 @@ const App = () => {
   const initialVotes = new Uint8Array(anecdotes.length) 
   const [votes, setVotes] = useState(initialVotes)
   const [selected, setSelected] = useState(0)
+  const [mostVotesIndex, setMostVotesIndex] = useState(0)
 
-  //Random number between two ints
+  //Returns random number between two ints
   const getRandom = (max) => {
     const minCeiled = Math.ceil(0);
     const maxFloored = Math.floor(max);
@@ -31,17 +51,18 @@ const App = () => {
   const handleVotes = () => {
     const copy = [...votes]
     copy[selected] += 1
+    //Set updated vote count
     setVotes(copy)
-    console.log(selected)
-    console.log(copy)
+    //Find & set index of mosted voted anecdote
+    setMostVotesIndex(copy.indexOf(Math.max(...copy)))
   }
 
   return (
     <div>
-     <p>{anecdotes[selected]}</p>
-     <p>has {votes[selected]} votes</p> 
+      <DailyAnecdote currentAnecdote= {anecdotes[selected]} currentVotes= {votes[selected]} />
       <Button handleClick= {() => handleVotes()} text = "vote"/>
       <Button handleClick= {() => setSelected(getRandom(anecdotes.length - 1))} text = "next anecdote"/>
+      <MostVotes mostAnecdote={anecdotes[mostVotesIndex]} mostVotes= {votes[mostVotesIndex]}/>
     </div>
   )
 }

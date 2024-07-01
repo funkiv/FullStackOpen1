@@ -1,15 +1,6 @@
 import { useState, useEffect } from 'react'
 import personService from './services/persons'
 
-const Persons = (prop) => {
-  const persons = prop.persons
-  const filter = prop.filter
-  const filteredPersons = persons.filter((person) => person.name.toLowerCase().match(filter.toLowerCase()))
-  return (
-    filteredPersons.map((filteredPersons) => <p key={filteredPersons.name}>{filteredPersons.name} {filteredPersons.number}</p>)
-  )
-}
-
 const Filter = ({newFilter, handleFilterChange}) => {
   return (
     <div>filter shown with <input value={newFilter} onChange={handleFilterChange}/></div>
@@ -18,13 +9,29 @@ const Filter = ({newFilter, handleFilterChange}) => {
 
 const PersonForm = (prop) => {
   return (
-    <form onSubmit={prop.addPerson}>
+    <form onSubmit={prop.handleAddPerson}>
         <div>name: <input value={prop.newName} onChange={prop.handleNameChange}/></div>
         <div>number: <input value={prop.newNumber} onChange={prop.handleNumberChange}/></div>
         <div>
           <button type="submit">add</button>
         </div>
       </form>
+  )
+}
+
+const Persons = (prop) => {
+  const persons = prop.persons
+  const filter = prop.filter
+  const filteredPersons = persons.filter((person) => person.name.toLowerCase().match(filter.toLowerCase()))
+  
+  return (
+    filteredPersons.map((filteredPerson) =>
+      <p key={filteredPerson.id}>
+      {filteredPerson.name} 
+      {filteredPerson.number}
+      <button onClick={() => prop.handleDeletePerson(filteredPerson)}>delete</button>
+      </p>
+    )
   )
 }
 
@@ -41,7 +48,6 @@ const App = () => {
   }
   useEffect(hook, [])
 
-
   //Event handlers for form
   const handleNameChange = (event) => {
     setNewName(event.target.value)  
@@ -49,12 +55,12 @@ const App = () => {
   const handleNumberChange = (event) => {
     setNewNumber(event.target.value)  
   }
-
+  
   const handleFilterChange = (event) => {
     setNewFilter(event.target.value)
   }
-
-  const addPerson = (event) => {
+  
+  const handleAddPerson = (event) => {
     event.preventDefault()
     const personObject = {
       name: newName,
@@ -70,21 +76,29 @@ const App = () => {
       setNewNumber('')
     } 
   }
-
+  
+  const handleDeletePerson = (filteredPerson) => {
+    if (window.confirm(`Delete ${filteredPerson.name} ?`)) {
+      personService
+      .deleteObject(filteredPerson.id)
+      .then(personDeleted => setPersons(persons.filter(person => person.id !== personDeleted.id)))
+    }
+  }
+  
   return (
     <div>
       <h2>Phonebook</h2>
       <Filter newFilter={newFilter} handleFilterChange={handleFilterChange}/>
       <h2>add a new</h2>
       <PersonForm 
-      addPerson={addPerson} 
+      handleAddPerson={handleAddPerson} 
       newName={newName} 
       handleNameChange={handleNameChange} 
       newNumber={newNumber} 
       handleNumberChange={handleNumberChange}
       />
       <h2>Numbers</h2>
-      <Persons persons={persons} filter={newFilter}/>
+      <Persons handleDeletePerson={handleDeletePerson} persons={persons} filter={newFilter}/>
     </div>
   )
 }

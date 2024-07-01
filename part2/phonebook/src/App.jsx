@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import axios from 'axios'
+import personService from './services/persons'
 
 const Persons = (prop) => {
   const persons = prop.persons
@@ -35,13 +35,9 @@ const App = () => {
   const [newFilter, setNewFilter] = useState('')
 
 
-  //Reaches out to JSON server and sets person state hook
+  //Reaches out to JSON server and returns & assigns persons
   const hook = () => {
-    axios
-      .get('http://localhost:3001/persons')
-      .then(response => {
-        setPersons(response.data)
-      })
+    personService.getAll().then(returnedPersons => setPersons(returnedPersons))
   }
   useEffect(hook, [])
 
@@ -67,8 +63,7 @@ const App = () => {
     if (persons.find(e => e.name.toLowerCase() == personObject.name.toLowerCase())){
       alert(`${newName} is already added to phonebook`)
     } else {
-      const returnedPersons = axios.post('http://localhost:3001/persons', personObject).then(response => response.data)
-      returnedPersons.then(returnedPersons => {
+      personService.create(personObject).then(returnedPersons => {
         setPersons(persons.concat(returnedPersons))
       })
       setNewName('')

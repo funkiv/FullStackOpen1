@@ -27,8 +27,8 @@ const Persons = (prop) => {
   return (
     filteredPersons.map((filteredPerson) =>
       <p key={filteredPerson.id}>
-      {filteredPerson.name} 
-      {filteredPerson.number}
+      {filteredPerson.name} {'  '} 
+      {filteredPerson.number} {'  '}
       <button onClick={() => prop.handleDeletePerson(filteredPerson)}>delete</button>
       </p>
     )
@@ -43,10 +43,11 @@ const App = () => {
 
 
   //Reaches out to JSON server and returns & assigns persons
-  const hook = () => {
-    personService.getAll().then(returnedPersons => setPersons(returnedPersons))
-  }
-  useEffect(hook, [])
+  useEffect(() => {
+    personService
+    .getAll()
+    .then(returnedPersons => setPersons(returnedPersons))  
+  }, [])
 
   //Event handlers for form
   const handleNameChange = (event) => {
@@ -66,8 +67,18 @@ const App = () => {
       name: newName,
       number: newNumber
     }
-    if (persons.find(e => e.name.toLowerCase() == personObject.name.toLowerCase())){
-      alert(`${newName} is already added to phonebook`)
+    const foundPerson = persons.find(e => e.name.toLowerCase() == personObject.name.toLowerCase())
+    if (foundPerson){
+      if (window.confirm(`${newName} is already added to phonebook, replace the old number with a new one?`)){
+        personService
+        .update(foundPerson.id, personObject)
+        .then(personUpdated => {
+          const newPersons = persons.map(person =>
+            person.id !== personUpdated.id 
+            ? person : personUpdated)
+          setPersons(newPersons) 
+        })  
+      }
     } else {
       personService.create(personObject).then(returnedPersons => {
         setPersons(persons.concat(returnedPersons))
@@ -98,7 +109,10 @@ const App = () => {
       handleNumberChange={handleNumberChange}
       />
       <h2>Numbers</h2>
-      <Persons handleDeletePerson={handleDeletePerson} persons={persons} filter={newFilter}/>
+      <Persons 
+      handleDeletePerson={handleDeletePerson} 
+      persons={persons} 
+      filter={newFilter}/>
     </div>
   )
 }

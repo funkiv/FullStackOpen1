@@ -106,7 +106,15 @@ const App = () => {
     if (window.confirm(`Delete ${filteredPerson.name} ?`)) {
       personService
       .deleteObject(filteredPerson.id)
-      .then(personDeleted => setPersons(persons.filter(person => person.id !== personDeleted.id)))
+      .then(personDeleted => 
+        setPersons(persons.filter(person => person.id !== personDeleted.id))
+      )
+      .catch(error => {
+        setNewMessage({text: `Information of ${filteredPerson.name} has already been removed from server`, isGood: false})
+        setTimeout(() => {
+          setNewMessage(null)
+        }, 5000)
+      })
     }
   }
   

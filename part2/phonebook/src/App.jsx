@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import personService from './services/persons'
+import Notification from './components/Notification'
 
 const Filter = ({newFilter, handleFilterChange}) => {
   return (
@@ -40,6 +41,7 @@ const App = () => {
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('')
   const [newFilter, setNewFilter] = useState('')
+  const [newMessage, setNewMessage] = useState(null)
 
 
   //Reaches out to JSON server and returns & assigns persons
@@ -76,12 +78,24 @@ const App = () => {
           const newPersons = persons.map(person =>
             person.id !== personUpdated.id 
             ? person : personUpdated)
-          setPersons(newPersons) 
+            //set message for Notification component call  
+            setNewMessage({text: `Updated ${personUpdated.name}`, isGood: true})
+            setTimeout(() => {
+              setNewMessage(null)
+            }, 5000)
+            setPersons(newPersons)
+            setNewName('')
+            setNewNumber('') 
         })  
       }
     } else {
       personService.create(personObject).then(returnedPersons => {
         setPersons(persons.concat(returnedPersons))
+        //set message for Notification component call  
+        setNewMessage({text: `Added ${returnedPersons.name}`, isGood: true})
+        setTimeout(() => {
+          setNewMessage(null)
+        }, 5000)
       })
       setNewName('')
       setNewNumber('')
@@ -99,6 +113,7 @@ const App = () => {
   return (
     <div>
       <h2>Phonebook</h2>
+      <Notification message={newMessage}/>
       <Filter newFilter={newFilter} handleFilterChange={handleFilterChange}/>
       <h2>add a new</h2>
       <PersonForm 

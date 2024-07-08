@@ -1,29 +1,48 @@
 import { useState, useEffect} from 'react'
 import countryService from './services/countries'
 
-const Countries = ({ countries, filter}) => {
-    const filteredCountries = countries.filter((country) => country.name.common.toLowerCase().match(filter.toLowerCase()))
+const SingleCountry = ({ singleCountry }) => {
+    return(
+        <div>
+        <h1>{singleCountry.name.common}</h1>
+        <p>capital {singleCountry.capital}</p>
+        <p> area {singleCountry.area}</p>
+        <h3>languages</h3>
+        <ul>
+            {Object.values(singleCountry.languages).map(e => <li key={e}>{e}</li>)}
+        </ul>
 
-    if (filteredCountries.length === 1) {
+        <img src={singleCountry.flags.png} alt={singleCountry.flags.alt}/>
+    </div>
+    )
+}
+
+const MultipleCountries = ({ filteredCountries, onSelectCountry }) => {
+
+    return(
+        filteredCountries.map((country) => 
+            <p key={country.name.common}>
+                {country.name.common}
+                <button onClick={() => onSelectCountry(country)}>show</button>
+            </p>
+        )
+    )
+}
+
+const RenderInfo = ({ countries, filter, selectedCountry , onSelectCountry }) => {
+    const filteredCountries = countries.filter((country) => country.name.common.toLowerCase().match(filter.toLowerCase()))
+    if(selectedCountry != null) {
+        return(
+            <SingleCountry singleCountry={selectedCountry}/>            
+        )
+    } else if (filteredCountries.length === 1) {
         const singleCountry = filteredCountries[0]
         return(
-            <div>
-                <h1>{singleCountry.name.common}</h1>
-                <p>capital {singleCountry.capital}</p>
-                <p> area {singleCountry.area}</p>
-                <h3>languages</h3>
-                <ul>
-                    {Object.values(singleCountry.languages).map(e => <li key={e}>{e}</li>)}
-                </ul>
-
-                <img src={singleCountry.flags.png} alt={singleCountry.flags.alt}/>
-            </div>
+            <SingleCountry singleCountry={singleCountry}/>
         )
     } else if (filteredCountries.length < 10) {       
         return (
-            filteredCountries.map((country) => 
-                <p key={country.name.common}>{country.name.common}</p>
-            )
+            <MultipleCountries filteredCountries={filteredCountries} onSelectCountry={onSelectCountry}/>
         )       
     } else {
         return <p>Too many matches, specify another filter</p> 
@@ -33,7 +52,8 @@ const Countries = ({ countries, filter}) => {
 const App = () => {
     const [countries, setCountries] = useState(null)
     const [newFilter, setNewFilter] = useState("")
-    
+    const [selectedCountry, setSelectedCountry] = useState(null)
+
     useEffect(() => {
     countryService
         .getAll()
@@ -42,22 +62,26 @@ const App = () => {
         })  
 }, [])
 
-if (!countries) { 
+    if (!countries) { 
     return null 
-  } 
+    } 
 
-const handleFilterChange = (event) => {
-    setNewFilter(event.target.value)
-
-  }
+    const handleSelectCountry = (country) => {
+        setSelectedCountry(country)
+    }
     
-return(
-<div>
-    find countries
-    <input onChange={handleFilterChange}/> 
-    <Countries countries={countries} filter={newFilter} />
-</div>    
-)
+    const handleFilterChange = (event) => {
+        setNewFilter(event.target.value)
+        setSelectedCountry(null)
+    }
+    
+    return(
+        <div>
+            find countries
+            <input onChange={handleFilterChange}/> 
+            <RenderInfo countries={countries} filter={newFilter} selectedCountry={selectedCountry} onSelectCountry={handleSelectCountry} />
+        </div>    
+    )
 }
 
 export default App

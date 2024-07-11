@@ -1,7 +1,9 @@
 import { useState, useEffect} from 'react'
 import apiService from './services/api'
 
-const SingleCountry = ({ singleCountry }) => {
+const SingleCountry = ({ singleCountry, selectedCountryWeather }) => {
+    if (!singleCountry || !selectedCountryWeather) return null
+
     return(
         <div>
         <h1>{singleCountry.name.common}</h1>
@@ -11,14 +13,16 @@ const SingleCountry = ({ singleCountry }) => {
         <ul>
             {Object.values(singleCountry.languages).map(e => <li key={e}>{e}</li>)}
         </ul>
-
         <img src={singleCountry.flags.png} alt={singleCountry.flags.alt}/>
+        <h1>Weather in {singleCountry.name.common}</h1>
+        <p>temperature {selectedCountryWeather.temp} Fahrenheit</p>
+        <img src={`https://openweathermap.org/img/wn/${selectedCountryWeather.weather[0].icon}@2x.png`} alt={selectedCountryWeather.weather[0].description} />
+        <p>wind {selectedCountryWeather.wind_speed} m/s</p>
     </div>
     )
 }
 
 const MultipleCountries = ({ filteredCountries, onSelectCountry }) => {
-
     return(
         filteredCountries.map((country) => 
             <p key={country.name.common}>
@@ -29,16 +33,24 @@ const MultipleCountries = ({ filteredCountries, onSelectCountry }) => {
     )
 }
 
-const RenderInfo = ({ countries, filter, selectedCountry , onSelectCountry }) => {
+const RenderInfo = ({ countries, filter, selectedCountry, selectedCountryWeather , onSelectCountry }) => {
     const filteredCountries = countries.filter((country) => country.name.common.toLowerCase().match(filter.toLowerCase()))
-    if(selectedCountry != null) {
+    
+    if (selectedCountry != null) {
         return(
-            <SingleCountry singleCountry={selectedCountry}/>            
+            <SingleCountry 
+            singleCountry={selectedCountry} 
+            selectedCountryWeather={selectedCountryWeather}
+            />            
         )
     } else if (filteredCountries.length === 1) {
         const singleCountry = filteredCountries[0]
-        return(
-            <SingleCountry singleCountry={singleCountry}/>
+        
+        return (
+            <SingleCountry 
+            singleCountry={singleCountry} 
+            selectedCountryWeather={selectedCountryWeather}
+            />
         )
     } else if (filteredCountries.length < 10) {       
         return (
@@ -55,17 +67,16 @@ const App = () => {
     const [selectedCountry, setSelectedCountry] = useState(null)
     const [selectedCountryWeather, setSelectedCountryWeather] = useState(null)
     const api_key = import.meta.env.VITE_WEATHER_KEY
-    console.log(api_key)
 
     useEffect(() => {
-        if (selectedCountry && selectedCountry.latlng) {
-            apiService
-                    .getAll(`https://api.openweathermap.org/data/3.0/onecall?lat=${selectedCountry.latlng[0]}&lon=${selectedCountry.latlng[1]}&exclude=hourly,daily&appid=${api_key}`)      
-                    .then(returnedWeather => {
-                        setSelectedCountryWeather(returnedWeather)
-                        console.log(returnedWeather)
-                    })
-        }
+            if (selectedCountry && selectedCountry.latlng) {
+                apiService
+                        .getAll(`https://api.openweathermap.org/data/3.0/onecall?lat=${selectedCountry.latlng[0]}&lon=${selectedCountry.latlng[1]}&exclude=hourly,daily&appid=${api_key}&units=imperial`)      
+                        .then(returnedWeather => {
+                            const selectedWeather = returnedWeather.current
+                            setSelectedCountryWeather(selectedWeather)
+                        })
+            }
     }, [selectedCountry])
 
     useEffect(() => {
@@ -74,7 +85,7 @@ const App = () => {
             .then(returnedCountries => {
                 setCountries(returnedCountries)
             })  
-}, [])
+    }, [])
 
     if (!countries) { 
     return null 
@@ -93,7 +104,13 @@ const App = () => {
         <div>
             find countries
             <input onChange={handleFilterChange}/> 
-            <RenderInfo countries={countries} filter={newFilter} selectedCountry={selectedCountry} onSelectCountry={handleSelectCountry} />
+            <RenderInfo 
+            countries={countries} 
+            filter={newFilter} 
+            selectedCountry={selectedCountry} 
+            selectedCountryWeather={selectedCountryWeather}
+            onSelectCountry={handleSelectCountry}
+             />
         </div>    
     )
 }

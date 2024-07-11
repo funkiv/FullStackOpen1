@@ -1,5 +1,5 @@
 import { useState, useEffect} from 'react'
-import countryService from './services/countries'
+import apiService from './services/api'
 
 const SingleCountry = ({ singleCountry }) => {
     return(
@@ -53,13 +53,27 @@ const App = () => {
     const [countries, setCountries] = useState(null)
     const [newFilter, setNewFilter] = useState("")
     const [selectedCountry, setSelectedCountry] = useState(null)
+    const [selectedCountryWeather, setSelectedCountryWeather] = useState(null)
+    const api_key = import.meta.env.VITE_WEATHER_KEY
+    console.log(api_key)
 
     useEffect(() => {
-    countryService
-        .getAll()
-        .then(returnedCountries => {
-            setCountries(returnedCountries)
-        })  
+        if (selectedCountry && selectedCountry.latlng) {
+            apiService
+                    .getAll(`https://api.openweathermap.org/data/3.0/onecall?lat=${selectedCountry.latlng[0]}&lon=${selectedCountry.latlng[1]}&exclude=hourly,daily&appid=${api_key}`)      
+                    .then(returnedWeather => {
+                        setSelectedCountryWeather(returnedWeather)
+                        console.log(returnedWeather)
+                    })
+        }
+    }, [selectedCountry])
+
+    useEffect(() => {
+        apiService
+            .getAll('https://studies.cs.helsinki.fi/restcountries/api/all')
+            .then(returnedCountries => {
+                setCountries(returnedCountries)
+            })  
 }, [])
 
     if (!countries) { 
@@ -69,7 +83,7 @@ const App = () => {
     const handleSelectCountry = (country) => {
         setSelectedCountry(country)
     }
-    
+
     const handleFilterChange = (event) => {
         setNewFilter(event.target.value)
         setSelectedCountry(null)

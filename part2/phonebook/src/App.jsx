@@ -2,11 +2,11 @@ import { useState, useEffect } from 'react'
 import personService from './services/persons'
 import Notification from './components/Notification'
 
-const Filter = ({newFilter, handleFilterChange}) => {
+const Filter = ({ newFilter, handleFilterChange }) => {
   return (
     <div>filter shown with <input value={newFilter} onChange={handleFilterChange}/></div>
   )
-}
+} 
 
 const PersonForm = (prop) => {
   return (
@@ -86,6 +86,12 @@ const App = () => {
             setPersons(newPersons)
             setNewName('')
             setNewNumber('') 
+        })
+        .catch(error => {
+          setNewMessage({text: error.response.data.error, isGood: false})
+          setTimeout(() => {
+            setNewMessage(null)
+          }, 5000)
         })  
       }
     } else {
@@ -93,6 +99,12 @@ const App = () => {
         setPersons(persons.concat(returnedPersons))
         //set message for Notification component call  
         setNewMessage({text: `Added ${returnedPersons.name}`, isGood: true})
+        setTimeout(() => {
+          setNewMessage(null)
+        }, 5000)
+      })
+      .catch(error => {
+        setNewMessage({text: error.response.data.error, isGood: false})
         setTimeout(() => {
           setNewMessage(null)
         }, 5000)
